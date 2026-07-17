@@ -1,0 +1,284 @@
+[
+  {
+    "id": "q01",
+    "question": "How do plants convert sunlight into chemical energy?",
+    "relevant_doc_ids": [
+      "photosynthesis"
+    ]
+  },
+  {
+    "id": "q02",
+    "question": "Which gas is released as a byproduct when plants make food?",
+    "relevant_doc_ids": [
+      "photosynthesis"
+    ]
+  },
+  {
+    "id": "q03",
+    "question": "How do honeybees tell the hive where to find food?",
+    "relevant_doc_ids": [
+      "honeybee"
+    ]
+  },
+  {
+    "id": "q04",
+    "question": "What are the different roles of bees within a colony?",
+    "relevant_doc_ids": [
+      "honeybee"
+    ]
+  },
+  {
+    "id": "q05",
+    "question": "What is the highest mountain on Earth above sea level?",
+    "relevant_doc_ids": [
+      "mount_everest"
+    ]
+  },
+  {
+    "id": "q06",
+    "question": "Who first reached the summit of Everest in 1953?",
+    "relevant_doc_ids": [
+      "mount_everest"
+    ]
+  },
+  {
+    "id": "q07",
+    "question": "Where is the world's largest coral reef system located?",
+    "relevant_doc_ids": [
+      "great_barrier_reef"
+    ]
+  },
+  {
+    "id": "q08",
+    "question": "What causes corals to lose their colour and turn white?",
+    "relevant_doc_ids": [
+      "great_barrier_reef"
+    ]
+  },
+  {
+    "id": "q09",
+    "question": "Which river releases the greatest volume of water into the sea?",
+    "relevant_doc_ids": [
+      "amazon_river"
+    ]
+  },
+  {
+    "id": "q10",
+    "question": "Into which ocean does the Amazon empty?",
+    "relevant_doc_ids": [
+      "amazon_river"
+    ]
+  },
+  {
+    "id": "q11",
+    "question": "What is the largest hot desert in the world?",
+    "relevant_doc_ids": [
+      "sahara_desert"
+    ]
+  },
+  {
+    "id": "q12",
+    "question": "On which continent is the Sahara found?",
+    "relevant_doc_ids": [
+      "sahara_desert"
+    ]
+  },
+  {
+    "id": "q13",
+    "question": "Who introduced the movable-type printing press in Europe?",
+    "relevant_doc_ids": [
+      "printing_press"
+    ]
+  },
+  {
+    "id": "q14",
+    "question": "How did printing change the availability of books and ideas?",
+    "relevant_doc_ids": [
+      "printing_press"
+    ]
+  },
+  {
+    "id": "q15",
+    "question": "Who discovered penicillin and when?",
+    "relevant_doc_ids": [
+      "penicillin"
+    ]
+  },
+  {
+    "id": "q16",
+    "question": "How does penicillin destroy bacteria?",
+    "relevant_doc_ids": [
+      "penicillin"
+    ]
+  },
+  {
+    "id": "q17",
+    "question": "How do bacteria become able to survive antibiotics?",
+    "relevant_doc_ids": [
+      "antibiotic_resistance"
+    ]
+  },
+  {
+    "id": "q18",
+    "question": "Why does overusing antibiotics lead to resistant bacteria?",
+    "relevant_doc_ids": [
+      "antibiotic_resistance"
+    ]
+  },
+  {
+    "id": "q19",
+    "question": "Why are drugs such as penicillin losing their effectiveness against infections?",
+    "relevant_doc_ids": [
+      "antibiotic_resistance",
+      "penicillin"
+    ]
+  },
+  {
+    "id": "q20",
+    "question": "Who created the first vaccine, and against which disease?",
+    "relevant_doc_ids": [
+      "vaccination"
+    ]
+  },
+  {
+    "id": "q21",
+    "question": "How does a vaccine train the body to fight disease?",
+    "relevant_doc_ids": [
+      "vaccination"
+    ]
+  },
+  {
+    "id": "q22",
+    "question": "Who described the double helix structure of DNA?",
+    "relevant_doc_ids": [
+      "dna"
+    ]
+  },
+  {
+    "id": "q23",
+    "question": "Which bases pair together across the two strands of DNA?",
+    "relevant_doc_ids": [
+      "dna"
+    ]
+  },
+  {
+    "id": "q24",
+    "question": "What is the largest planet in the Solar System?",
+    "relevant_doc_ids": [
+      "jupiter"
+    ]
+  },
+  {
+    "id": "q25",
+    "question": "What is the Great Red Spot on Jupiter?",
+    "relevant_doc_ids": [
+      "jupiter"
+    ]
+  },
+  {
+    "id": "q26",
+    "question": "What is molten rock called once it erupts onto the surface?",
+    "relevant_doc_ids": [
+      "volcano"
+    ]
+  },
+  {
+    "id": "q27",
+    "question": "Where do most volcanoes form in relation to tectonic plates?",
+    "relevant_doc_ids": [
+      "volcano"
+    ]
+  },
+  {
+    "id": "q28",
+    "question": "How does a lithium-ion battery store and release energy?",
+    "relevant_doc_ids": [
+      "lithium_ion_battery"
+    ]
+  },
+  {
+    "id": "q29",
+    "question": "Which everyday devices are powered by lithium-ion batteries?",
+    "relevant_doc_ids": [
+      "lithium_ion_battery"
+    ]
+  },
+  {
+    "id": "q30",
+    "question": "How do solar cells turn sunlight into electricity?",
+    "relevant_doc_ids": [
+      "photovoltaics"
+    ]
+  },
+  {
+    "id": "q31",
+    "question": "What material are most solar cells made from?",
+    "relevant_doc_ids": [
+      "photovoltaics"
+    ]
+  },
+  {
+    "id": "q32",
+    "question": "How were living things and solar panels both able to capture light energy?",
+    "relevant_doc_ids": [
+      "photosynthesis",
+      "photovoltaics"
+    ]
+  },
+  {
+    "id": "q33",
+    "question": "How did Roman aqueducts move water over long distances?",
+    "relevant_doc_ids": [
+      "roman_aqueduct"
+    ]
+  },
+  {
+    "id": "q34",
+    "question": "What did aqueducts supply water to inside Roman cities?",
+    "relevant_doc_ids": [
+      "roman_aqueduct"
+    ]
+  },
+  {
+    "id": "q35",
+    "question": "Why was the Great Wall of China built?",
+    "relevant_doc_ids": [
+      "great_wall_of_china"
+    ]
+  },
+  {
+    "id": "q36",
+    "question": "Which dynasty built most of the surviving Great Wall?",
+    "relevant_doc_ids": [
+      "great_wall_of_china"
+    ]
+  },
+  {
+    "id": "q37",
+    "question": "Where was William Shakespeare born?",
+    "relevant_doc_ids": [
+      "william_shakespeare"
+    ]
+  },
+  {
+    "id": "q38",
+    "question": "Which famous tragedies did Shakespeare write?",
+    "relevant_doc_ids": [
+      "william_shakespeare"
+    ]
+  },
+  {
+    "id": "q39",
+    "question": "Which plant do coffee beans come from, and where did coffee originate?",
+    "relevant_doc_ids": [
+      "coffee"
+    ]
+  },
+  {
+    "id": "q40",
+    "question": "How do the addresses used by IPv4 and IPv6 differ?",
+    "relevant_doc_ids": [
+      "internet_protocol"
+    ]
+  }
+]
