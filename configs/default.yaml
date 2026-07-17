@@ -1,0 +1,65 @@
+# Default experiment for the demo corpus.
+#
+# Three retrieval configurations are compared along two axes:
+#   * chunk size (baseline vs large_chunks)
+#   * embedding capacity (baseline vs low_dim), an ablation that shrinks the
+#     latent-semantic space so the effect on retrieval quality is measurable.
+#
+# Paths are resolved relative to the directory the CLI is run from
+# (run from the project root).
+
+corpus_path: demo/corpus
+eval_path: demo/eval_set.json
+output_dir: results
+
+# Reproducibility and statistics.
+seed: 20240517
+ks: [1, 3, 5]
+alpha: 0.05
+n_boot: 10000
+n_perm: 10000
+answer_sentences: 2
+# Headline metric: the one with the clearest configuration effect on this
+# corpus. Retrieval metrics saturate because the 20 topics are well separated.
+primary_metric: context_utilization
+
+# Experiment-wide (default) embedding backend: offline TF-IDF reduced with
+# latent semantic analysis. Zero downloads, deterministic. Swap to the dense
+# backend with:
+#   embedder:
+#     name: sentence-transformers
+#     model_name: sentence-transformers/all-MiniLM-L6-v2
+embedder:
+  name: tfidf
+  svd_dim: 128
+
+index_kind: faiss
+
+judge:
+  name: local
+  faithfulness_threshold: 0.5
+  utilization_threshold: 0.5
+
+# Retrieval configurations to evaluate. A configuration may override the
+# experiment-wide embedder (see low_dim).
+configs:
+  - name: baseline
+    chunk_size: 128
+    overlap: 20
+    top_k: 5
+  - name: large_chunks
+    chunk_size: 256
+    overlap: 20
+    top_k: 5
+  - name: low_dim
+    chunk_size: 128
+    overlap: 20
+    top_k: 5
+    embedder:
+      name: tfidf
+      svd_dim: 8
+
+# Pairwise comparisons (config A vs config B).
+comparisons:
+  - [baseline, large_chunks]   # effect of chunk size
+  - [baseline, low_dim]        # effect of embedding capacity
