@@ -9,7 +9,7 @@ description = "A statistically rigorous evaluation framework for retrieval-augme
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "MK" }]
+authors = [{ name = "Jayanshu Badlani" }]
 keywords = ["retrieval", "evaluation", "information-retrieval", "rag", "statistics"]
 dependencies = [
     "numpy>=1.23",
