@@ -159,6 +159,28 @@ What the run shows:
 
 The full breakdown, including the many non-significant retrieval rows, is in [`results/report.md`](results/report.md).
 
+## Case study: measuring a production retrieval stack
+
+I also pointed the framework at the retrieval stack of my own PDF chatbot, [DocMind](https://github.com/JAYANSHUBADLANI/rag-pdf-chatbot), which uses dense MiniLM embeddings plus a cross-encoder reranking stage (over-retrieve 12 candidates, rerank with `ms-marco-MiniLM-L-6-v2`, keep the top 5). The question: does each stage of that stack buy a statistically defensible improvement over something simpler, or does it just feel better?
+
+```bash
+python -m rag_eval run --config configs/docmind.yaml
+```
+
+| Metric | tfidf_baseline | minilm | minilm_rerank |
+| --- | ---: | ---: | ---: |
+| Recall@5 | 1.000 | 1.000 | 1.000 |
+| MRR | 1.000 | 1.000 | 1.000 |
+| Answer relevance | 0.169 | 0.186 | 0.186 |
+| Context utilization | 0.084 | 0.090 | 0.086 |
+
+Verdicts from the paired permutation tests:
+
+- **TF-IDF vs MiniLM:** dense embeddings look better on answer relevance (+0.017) but the test says **not significant** (p = 0.17) on 40 questions — the point estimate alone would have over-claimed.
+- **MiniLM vs MiniLM + reranker:** answer relevance is indistinguishable (p = 0.63), and the reranker actually **significantly lowers context utilization** (p = 0.0005). Document-level retrieval is already saturated on this corpus, so the cross-encoder stage has nothing left to fix.
+
+The honest conclusion: on well-separated topics the extra stages of the production stack are not measurable wins, and the framework says so instead of flattering the more complex system. Reranking earns its keep on harder corpora — ambiguous queries over overlapping documents — which is exactly the kind of claim this harness exists to test rather than assume. Full numbers in [`results/docmind/report.md`](results/docmind/report.md).
+
 ## Project layout
 
 ```
@@ -177,8 +199,8 @@ rag-evaluation-framework/
 ├── demo/
 │   ├── corpus/           # 20 short encyclopedia-style .txt documents
 │   └── eval_set.json     # 40 questions with relevant document ids
-├── configs/default.yaml  # the demo experiment
-├── results/              # generated CSVs + report (real numbers)
+├── configs/              # default.yaml (demo) + docmind.yaml (case study)
+├── results/              # generated CSVs + reports (real numbers)
 ├── tests/                # pytest suite
 ├── pyproject.toml
 ├── requirements.txt
@@ -215,13 +237,26 @@ embedder:
   model_name: sentence-transformers/all-MiniLM-L6-v2
 ```
 
+A configuration becomes two-stage when it names a cross-encoder: `rerank_candidates` chunks are retrieved from the vector index, re-scored jointly with the query, and the top `top_k` survivors are kept:
+
+```yaml
+configs:
+  - name: minilm_rerank
+    chunk_size: 128
+    overlap: 20
+    top_k: 5
+    embedder: { name: sentence-transformers }
+    rerank_model: cross-encoder/ms-marco-MiniLM-L-6-v2
+    rerank_candidates: 12
+```
+
 ## Testing
 
 ```bash
 pytest
 ```
 
-The suite (67 tests) covers every retrieval and generation metric against hand-computed expected values, the bootstrap and permutation functions, both judge backends (the language-model judge with an injected chat function, so no network is used), the chunker and both vector indexes, dataset validation, and an end-to-end run plus the CLI on a tiny fixture.
+The suite (69 tests) covers every retrieval and generation metric against hand-computed expected values, the bootstrap and permutation functions, both judge backends (the language-model judge with an injected chat function, so no network is used), the chunker and both vector indexes, dataset validation, and an end-to-end run plus the CLI on a tiny fixture.
 
 ## Limitations
 
