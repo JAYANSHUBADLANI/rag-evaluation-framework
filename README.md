@@ -103,7 +103,7 @@ $$\text{Faithfulness} = \frac{1}{|A|}\sum_{i} \mathbb{1}\!\left[\max_{j}\cos(a_i
 
 the fraction of answer sentences supported by some context sentence (a grounding / hallucination proxy).
 
-$$\text{AnswerRelevance} = \operatorname{clamp}_{[0,1]}\!\left(\frac{1}{|A|}\sum_{i}\cos(a_i, q)\right)$$
+$$\text{AnswerRelevance} = \text{clamp}_{[0,1]}\!\left(\frac{1}{|A|}\sum_{i}\cos(a_i, q)\right)$$
 
 how well the answer, on average, addresses the question.
 
