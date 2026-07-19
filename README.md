@@ -256,7 +256,7 @@ configs:
 pytest
 ```
 
-The suite (69 tests) covers every retrieval and generation metric against hand-computed expected values, the bootstrap and permutation functions, both judge backends (the language-model judge with an injected chat function, so no network is used), the chunker and both vector indexes, dataset validation, and an end-to-end run plus the CLI on a tiny fixture.
+The suite (72 tests) covers every retrieval and generation metric against hand-computed expected values, the bootstrap and permutation functions, both judge backends (the language-model judge with an injected chat function, so no network is used), the chunker and both vector indexes, dataset validation, retrieval config validation, and end-to-end runs (including a reranked configuration) plus the CLI on a tiny fixture.
 
 ## Limitations
 

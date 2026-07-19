@@ -6,7 +6,9 @@ import json
 
 import yaml
 
+from rag_eval import pipeline as pipeline_module
 from rag_eval.__main__ import main
+from rag_eval.config import ExperimentConfig, RetrievalConfig
 from rag_eval.experiment import all_metric_names, run_experiment, write_results
 
 
@@ -87,3 +89,65 @@ def test_per_query_csv_row_count(tiny_config):
     rows = paths["per_query"].read_text(encoding="utf-8").splitlines()
     # header + (2 configs * 6 questions)
     assert len(rows) == 1 + 2 * 6
+
+
+class _StubCrossEncoder:
+    """Offline stand-in for a cross-encoder: scores by shared-word count."""
+
+    def predict(self, pairs):
+        return [
+            float(len(set(query.lower().split()) & set(text.lower().split())))
+            for query, text in pairs
+        ]
+
+
+def test_run_config_with_reranker(tiny_project, monkeypatch):
+    """A retrieval config with rerank_model set runs end-to-end without a
+    network call, by stubbing the cross-encoder's model loading."""
+
+    def _stub_ensure_model(self):
+        if self._model is None:
+            self._model = _StubCrossEncoder()
+
+    monkeypatch.setattr(
+        pipeline_module.CrossEncoderReranker, "_ensure_model", _stub_ensure_model
+    )
+
+    config = ExperimentConfig(
+        corpus_path=tiny_project["corpus"],
+        eval_path=tiny_project["eval"],
+        output_dir=tiny_project["output"],
+        configs=[
+            RetrievalConfig(name="plain", chunk_size=8, overlap=2, top_k=3),
+            RetrievalConfig(
+                name="reranked",
+                chunk_size=8,
+                overlap=2,
+                top_k=3,
+                rerank_model="stub-cross-encoder",
+                rerank_candidates=5,
+            ),
+        ],
+        comparisons=[("plain", "reranked")],
+        embedder_name="tfidf",
+        embedder_kwargs={"svd_dim": None},
+        index_kind="faiss",
+        judge_name="local",
+        judge_kwargs={},
+        ks=(1, 3),
+        n_boot=200,
+        n_perm=200,
+        alpha=0.05,
+        answer_sentences=2,
+        primary_metric="recall@3",
+        seed=7,
+    )
+
+    result = run_experiment(config)
+
+    assert set(result.runs) == {"plain", "reranked"}
+    reranked_run = result.runs["reranked"]
+    assert "rerank(stub-cross-encoder)" in reranked_run.embedder_label
+    for metric, values in reranked_run.per_query.items():
+        assert len(values) == 6
+        assert all(0.0 <= v <= 1.0 for v in values)

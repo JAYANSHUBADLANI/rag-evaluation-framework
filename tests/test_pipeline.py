@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from rag_eval.config import RetrievalConfig
 from rag_eval.embeddings import TfidfEmbedder, l2_normalize
 from rag_eval.pipeline import (
     Chunk,
@@ -128,3 +129,27 @@ def test_reranker_reorders_by_cross_encoder_score():
 def test_reranker_empty_input_returns_empty():
     reranker = CrossEncoderReranker()
     assert reranker.rerank("anything", []) == []
+
+
+def test_retrieval_config_rejects_rerank_candidates_below_top_k():
+    with pytest.raises(ValueError):
+        RetrievalConfig(
+            name="bad",
+            chunk_size=128,
+            overlap=0,
+            top_k=5,
+            rerank_model="cross-encoder/ms-marco-MiniLM-L-6-v2",
+            rerank_candidates=3,
+        )
+
+
+def test_retrieval_config_allows_rerank_candidates_at_or_above_top_k():
+    config = RetrievalConfig(
+        name="good",
+        chunk_size=128,
+        overlap=0,
+        top_k=5,
+        rerank_model="cross-encoder/ms-marco-MiniLM-L-6-v2",
+        rerank_candidates=12,
+    )
+    assert config.rerank_candidates == 12
