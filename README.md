@@ -1,6 +1,6 @@
 # rag-evaluation-framework
 
-A statistically grounded evaluation framework for retrieval-augmented generation (RAG) pipelines. It scores a pipeline on three levels — retrieval, generation, and statistical significance — and reports every number with a confidence interval and, where two configurations are compared, a p-value. The whole project runs offline with no API keys and no runtime downloads.
+A statistically grounded evaluation framework for retrieval-augmented generation (RAG) pipelines. It scores a pipeline on three levels: retrieval, generation, and statistical significance, and reports every number with a confidence interval and, where two configurations are compared, a p-value. The whole project runs offline with no API keys and no runtime downloads.
 
 ## Why this exists
 
@@ -12,7 +12,7 @@ This framework treats evaluation as a measurement problem:
 - Every A-vs-B comparison is run through a **paired permutation test**, so "A is better than B" is only claimed when the difference survives a hypothesis test on the same questions.
 - The retrieval metrics are pure functions checked against **hand-computed values** in the test suite, so the arithmetic is trustworthy.
 
-The demo below shows the payoff directly: shrinking the embedding drops point-estimate Recall@1 by ten points, yet the permutation test declines to call it significant on 40 questions — exactly the over-claim the statistical layer is designed to catch.
+The demo below shows the payoff directly: shrinking the embedding drops point-estimate Recall@1 by ten points, yet the permutation test declines to call it significant on 40 questions, exactly the over-claim the statistical layer is designed to catch.
 
 ## Architecture
 
@@ -42,7 +42,7 @@ The package is layered so the parts that need to be correct are isolated from th
 | Embeddings | `rag_eval.embeddings` | scikit-learn (offline) / optional sentence-transformers |
 | Pipeline (chunk, index, retrieve, answer) | `rag_eval.pipeline` | FAISS |
 | Judges | `rag_eval.judges` | none (local) / HTTP (language-model backend) |
-| Runner, report, CLI | `rag_eval.experiment`, `rag_eval.report`, `rag_eval.__main__` | — |
+| Runner, report, CLI | `rag_eval.experiment`, `rag_eval.report`, `rag_eval.__main__` | none |
 
 ## Installation
 
@@ -65,10 +65,10 @@ python -m rag_eval run --config configs/default.yaml
 
 This evaluates three retrieval configurations on the demo corpus and writes four files to `results/`:
 
-- `report.md` — human-readable report with confidence intervals and verdicts.
-- `summary.csv` — per-configuration metric means and CIs.
-- `comparisons.csv` — every pairwise metric difference, CI and p-value.
-- `per_query_metrics.csv` — the raw per-question values behind everything else.
+- `report.md`: human-readable report with confidence intervals and verdicts.
+- `summary.csv`: per-configuration metric means and CIs.
+- `comparisons.csv`: every pairwise metric difference, CI and p-value.
+- `per_query_metrics.csv`: the raw per-question values behind everything else.
 
 Using the library directly:
 
@@ -126,7 +126,7 @@ $$p = \frac{\#\{\,b : |\bar{d}^{(b)}_{\text{perm}}| \ge |\bar{d}_{\text{obs}}|\,
 
 The `+1` keeps the p-value from ever being exactly zero. A difference is called significant at `α = 0.05`, and the confidence interval on the paired difference is itself bootstrapped.
 
-Sign-flipping (rather than shuffling labels between independent groups) is the right procedure here precisely because the evaluation is paired — the same 40 questions run through both configurations.
+Sign-flipping (rather than shuffling labels between independent groups) is the right procedure here precisely because the evaluation is paired: the same 40 questions run through both configurations.
 
 ## Demo results
 
@@ -153,9 +153,9 @@ Significant comparisons (two-sided paired permutation test, `α = 0.05`):
 
 What the run shows:
 
-1. **Chunk size did not change retrieval at all** on this corpus — every retrieval metric is identical for `baseline` and `large_chunks` (the 20 topics are lexically well separated, so retrieval is saturated). It did, however, **significantly change context utilization**: 128-token chunks put a larger share of the retrieved context to use than 256-token chunks (p = 0.0001).
-2. **The embedding ablation is the cautionary tale.** Cutting the LSA space to 8 dimensions lowers point-estimate Recall@1 from 0.975 to 0.875 and MRR from 1.000 to 0.938 — differences a point-estimate table would happily report. On 40 questions the permutation test returns **p = 0.12: not significant**. The same ablation *does* significantly reduce answer relevance (p = 0.0015), because that metric moves on more questions. Reporting only the headline retrieval drop would have been an over-claim; the framework flags it.
-3. **Faithfulness is 1.000 everywhere** because the demo generator is extractive — it composes answers from retrieved sentences, so answers are grounded in context by construction, and the metric correctly reflects that. The language-model judge exists for evaluating genuinely generative pipelines.
+1. **Chunk size did not change retrieval at all** on this corpus: every retrieval metric is identical for `baseline` and `large_chunks` (the 20 topics are lexically well separated, so retrieval is saturated). It did, however, **significantly change context utilization**: 128-token chunks put a larger share of the retrieved context to use than 256-token chunks (p = 0.0001).
+2. **The embedding ablation is the cautionary tale.** Cutting the LSA space to 8 dimensions lowers point-estimate Recall@1 from 0.975 to 0.875 and MRR from 1.000 to 0.938, differences a point-estimate table would happily report. On 40 questions the permutation test returns **p = 0.12: not significant**. The same ablation *does* significantly reduce answer relevance (p = 0.0015), because that metric moves on more questions. Reporting only the headline retrieval drop would have been an over-claim; the framework flags it.
+3. **Faithfulness is 1.000 everywhere** because the demo generator is extractive: it composes answers from retrieved sentences, so answers are grounded in context by construction, and the metric correctly reflects that. The language-model judge exists for evaluating genuinely generative pipelines.
 
 The full breakdown, including the many non-significant retrieval rows, is in [`results/report.md`](results/report.md).
 
@@ -176,10 +176,10 @@ python -m rag_eval run --config configs/docmind.yaml
 
 Verdicts from the paired permutation tests:
 
-- **TF-IDF vs MiniLM:** dense embeddings look better on answer relevance (+0.017) but the test says **not significant** (p = 0.17) on 40 questions — the point estimate alone would have over-claimed.
+- **TF-IDF vs MiniLM:** dense embeddings look better on answer relevance (+0.017) but the test says **not significant** (p = 0.17) on 40 questions; the point estimate alone would have over-claimed.
 - **MiniLM vs MiniLM + reranker:** answer relevance is indistinguishable (p = 0.63), and the reranker actually **significantly lowers context utilization** (p = 0.0005). Document-level retrieval is already saturated on this corpus, so the cross-encoder stage has nothing left to fix.
 
-The honest conclusion: on well-separated topics the extra stages of the production stack are not measurable wins, and the framework says so instead of flattering the more complex system. Reranking earns its keep on harder corpora — ambiguous queries over overlapping documents — which is exactly the kind of claim this harness exists to test rather than assume. Full numbers in [`results/docmind/report.md`](results/docmind/report.md).
+The honest conclusion: on well-separated topics the extra stages of the production stack are not measurable wins, and the framework says so instead of flattering the more complex system. Reranking earns its keep on harder corpora (ambiguous queries over overlapping documents), which is exactly the kind of claim this harness exists to test rather than assume. Full numbers in [`results/docmind/report.md`](results/docmind/report.md).
 
 ## Project layout
 
@@ -264,7 +264,7 @@ The suite (72 tests) covers every retrieval and generation metric against hand-c
 - **"Higher is better" is assumed for every metric.** Context utilization in particular is a proxy for retrieval efficiency, not an unqualified good; a very high value can also mean too little context was retrieved. Interpret it alongside the retrieval metrics.
 - **Document-level relevance.** The demo labels relevance at the document level so chunk sizes are comparable. Passage-level or graded relevance judgments would give finer-grained retrieval scores (the nDCG implementation already accepts graded gains).
 - **The demo corpus is easy on purpose.** Twenty well-separated topics make retrieval saturate, which is what surfaces the "large effect size, not significant" lesson; it is not a claim about difficulty on real corpora.
-- **The permutation test assumes exchangeable, paired questions** and, like any test, loses power on small evaluation sets — as the embedding ablation demonstrates.
+- **The permutation test assumes exchangeable, paired questions** and, like any test, loses power on small evaluation sets, as the embedding ablation demonstrates.
 
 ## License
 
