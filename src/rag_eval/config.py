@@ -17,6 +17,10 @@ class RetrievalConfig:
     ``embedder_name`` optionally overrides the experiment-wide embedder for this
     configuration only, which is what makes embedding-capacity ablations
     possible alongside chunk-size and top-k sweeps.
+
+    When ``rerank_model`` is set the pipeline becomes two-stage:
+    ``rerank_candidates`` chunks are retrieved from the vector index, re-scored
+    by the cross-encoder, and the top ``top_k`` survivors are kept.
     """
 
     name: str
@@ -25,6 +29,15 @@ class RetrievalConfig:
     top_k: int
     embedder_name: str | None = None
     embedder_kwargs: dict[str, Any] = field(default_factory=dict)
+    rerank_model: str | None = None
+    rerank_candidates: int = 0
+
+    def __post_init__(self) -> None:
+        if self.rerank_model is not None and self.rerank_candidates < self.top_k:
+            raise ValueError(
+                f"rerank_candidates ({self.rerank_candidates}) must be >= "
+                f"top_k ({self.top_k}) when a rerank_model is set"
+            )
 
 
 @dataclass(frozen=True)
@@ -63,6 +76,7 @@ def _parse_retrieval_config(raw: Mapping[str, Any]) -> RetrievalConfig:
         embedder_name, embedder_kwargs = None, {}
     else:
         embedder_name, embedder_kwargs = _split_named_block(embedder, "tfidf")
+    rerank_model = raw.get("rerank_model")
     return RetrievalConfig(
         name=str(raw["name"]),
         chunk_size=int(raw["chunk_size"]),
@@ -70,6 +84,8 @@ def _parse_retrieval_config(raw: Mapping[str, Any]) -> RetrievalConfig:
         top_k=int(raw["top_k"]),
         embedder_name=embedder_name,
         embedder_kwargs=embedder_kwargs,
+        rerank_model=None if rerank_model is None else str(rerank_model),
+        rerank_candidates=int(raw.get("rerank_candidates", 0)),
     )
 
 

@@ -25,6 +25,7 @@ from rag_eval.embeddings import build_embedder
 from rag_eval.judges import Judge, build_judge
 from rag_eval.metrics.retrieval import retrieval_metrics_for_query
 from rag_eval.pipeline import (
+    CrossEncoderReranker,
     Retriever,
     chunk_document,
     extractive_answer,
@@ -119,13 +120,25 @@ def run_config(
     retriever = Retriever(embedder, cfg.index_kind)
     retriever.index(chunks)
 
+    reranker = None
+    if retrieval_config.rerank_model is not None:
+        reranker = CrossEncoderReranker(retrieval_config.rerank_model)
+        embedder_label += f" + rerank({retrieval_config.rerank_model})"
+
     metric_names = all_metric_names(cfg.ks)
     per_query: dict[str, list[float]] = {name: [] for name in metric_names}
     example_ids: list[str] = []
     judge_samples: list[tuple[str, str, list[str]]] = []
 
     for example in examples:
-        retrieved = retriever.retrieve(example.question, retrieval_config.top_k)
+        if reranker is not None:
+            candidates = retriever.retrieve(
+                example.question, retrieval_config.rerank_candidates
+            )
+            retrieved = reranker.rerank(example.question, candidates)
+            retrieved = retrieved[: retrieval_config.top_k]
+        else:
+            retrieved = retriever.retrieve(example.question, retrieval_config.top_k)
         doc_ranking = ranked_doc_ids(retrieved)
         query_metrics = retrieval_metrics_for_query(
             doc_ranking, example.relevant_doc_ids, cfg.ks

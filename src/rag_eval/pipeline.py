@@ -196,6 +196,58 @@ class Retriever:
         return list(self._chunks)
 
 
+class CrossEncoderReranker:
+    """Optional second-stage reranker backed by a cross-encoder.
+
+    A cross-encoder scores each (query, chunk) pair jointly instead of
+    comparing pre-computed embeddings, which is slower but considerably more
+    precise. The intended use is two-stage retrieval: over-retrieve a candidate
+    pool with the vector index, rerank it here, then keep the top ``k``.
+
+    The heavy dependency and its model weights are only imported and loaded on
+    first use, mirroring :class:`~rag_eval.embeddings.SentenceTransformerEmbedder`,
+    so the framework stays fully offline unless a reranker is explicitly
+    configured.
+    """
+
+    def __init__(
+        self,
+        model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        *,
+        device: str | None = None,
+    ) -> None:
+        self.model_name = model_name
+        self.device = device
+        self._model = None
+
+    def _ensure_model(self) -> None:
+        if self._model is None:
+            from sentence_transformers import CrossEncoder
+
+            self._model = CrossEncoder(self.model_name, device=self.device)
+
+    def rerank(
+        self, query: str, retrieved: Sequence[RetrievedChunk]
+    ) -> list[RetrievedChunk]:
+        """Re-score ``retrieved`` against ``query`` and return them re-ordered.
+
+        Scores come from the cross-encoder; the sort is stable so ties keep
+        their original (vector-similarity) order. The returned
+        :class:`RetrievedChunk` scores are the cross-encoder scores.
+        """
+        if not retrieved:
+            return []
+        self._ensure_model()
+        assert self._model is not None
+        pairs = [(query, item.chunk.text) for item in retrieved]
+        scores = self._model.predict(pairs)
+        order = np.argsort(-np.asarray(scores, dtype=np.float32), kind="stable")
+        return [
+            RetrievedChunk(retrieved[int(i)].chunk, float(scores[int(i)]))
+            for i in order
+        ]
+
+
 def ranked_doc_ids(retrieved: Sequence[RetrievedChunk]) -> list[str]:
     """Collapse a ranked chunk list onto a ranked list of unique document ids.
 

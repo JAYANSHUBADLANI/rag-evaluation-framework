@@ -8,6 +8,7 @@ import pytest
 from rag_eval.embeddings import TfidfEmbedder, l2_normalize
 from rag_eval.pipeline import (
     Chunk,
+    CrossEncoderReranker,
     FaissIndex,
     NumpyIndex,
     Retriever,
@@ -100,3 +101,30 @@ def test_extractive_answer_selects_relevant_sentence():
     retrieved = retriever.retrieve("Which instrument is played by strumming?", k=3)
     answer = extractive_answer("Which instrument is played by strumming?", retrieved, embedder, max_sentences=1)
     assert "guitar" in answer.lower()
+
+
+class _StubCrossEncoder:
+    """Offline stand-in for a cross-encoder: scores by shared-word count."""
+
+    def predict(self, pairs):
+        return [
+            float(len(set(query.lower().split()) & set(text.lower().split())))
+            for query, text in pairs
+        ]
+
+
+def test_reranker_reorders_by_cross_encoder_score():
+    retrieved = [
+        RetrievedChunk(Chunk("a#0", "a", "nothing relevant here"), 0.9),
+        RetrievedChunk(Chunk("b#0", "b", "the tallest mountain is everest"), 0.5),
+    ]
+    reranker = CrossEncoderReranker()
+    reranker._model = _StubCrossEncoder()  # keep the test offline
+    result = reranker.rerank("what is the tallest mountain", retrieved)
+    assert [item.chunk.doc_id for item in result] == ["b", "a"]
+    assert result[0].score > result[1].score
+
+
+def test_reranker_empty_input_returns_empty():
+    reranker = CrossEncoderReranker()
+    assert reranker.rerank("anything", []) == []
