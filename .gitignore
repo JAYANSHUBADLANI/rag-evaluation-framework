@@ -26,3 +26,7 @@ env/
 # Local model / embedding caches
 .cache/
 *.faiss
+
+# Local secrets
+.env
+.env.*
