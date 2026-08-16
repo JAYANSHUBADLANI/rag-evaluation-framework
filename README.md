@@ -1,5 +1,7 @@
 # rag-evaluation-framework
 
+[![tests](https://github.com/JAYANSHUBADLANI/rag-evaluation-framework/actions/workflows/tests.yml/badge.svg)](https://github.com/JAYANSHUBADLANI/rag-evaluation-framework/actions/workflows/tests.yml)
+
 A statistically grounded evaluation framework for retrieval-augmented generation (RAG) pipelines. It scores a pipeline on three levels: retrieval, generation, and statistical significance, and reports every number with a confidence interval and, where two configurations are compared, a p-value. The whole project runs offline with no API keys and no runtime downloads.
 
 ## Why this exists
